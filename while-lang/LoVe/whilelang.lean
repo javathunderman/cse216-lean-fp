@@ -53,5 +53,19 @@ inductive BigStep : Stmt × State → State → Prop where
 
 infix:110 " ⟹ " => BigStep
 
+/- What does this theorem actually say? -/
+theorem silly_from_1_BigStep :
+  (sillyLoop, (fun _ ↦ 0)["x" ↦ 1]) ⟹ (fun _ ↦ 0) :=
+    by
+      rw [sillyLoop] /- what does the rw tactic do -/
+      apply BigStep.while_true
+      { simp }
+      { apply BigStep.seq
+        { apply BigStep.skip }
+        { apply BigStep.assign } }
+      simp
+      apply BigStep.while_false
+      simp
+
 
 end LoVe
