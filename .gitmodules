@@ -1,0 +1,3 @@
+[submodule "interactive_theorem_proving_2024"]
+	path = interactive_theorem_proving_2024
+	url = git@github.com:blanchette/interactive_theorem_proving_2024.git
