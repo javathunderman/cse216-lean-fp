@@ -57,7 +57,7 @@ infix:110 " ⟹ " => BigStep
 theorem silly_from_1_BigStep :
   (sillyLoop, (fun _ ↦ 0)["x" ↦ 1]) ⟹ (fun _ ↦ 0) :=
     by
-      rw [sillyLoop] /- what does the rw tactic do -/
+      rw [sillyLoop] /- what does the rw tactic do? rewrite -/
       apply BigStep.while_true
       { simp }
       { apply BigStep.seq
@@ -67,5 +67,32 @@ theorem silly_from_1_BigStep :
       apply BigStep.while_false
       simp
 
+theorem BigStep_deterministic {Ss l r} (hl: Ss ⟹ l)
+  (hr: Ss ⟹ r):
+    l = r := by
+      induction hl with
+        | skip => cases hr with
+          | skip => rfl
+        | assign =>
+          cases hr with
+            | assign => rfl
+        | seq S T s t l hS hT ihS ihT => cases hr with
+          | seq _ _ _ t' _ hS' hT' => cases ihS hS' with
+            | refl => cases ihT hT' with
+              | refl => rfl
+        | if_true B S T s l bProp hS iH => cases hr with
+          | if_true _ _ _ _ r _ hS' => apply iH hS'
+          | if_false => aesop
+        | if_false B S T s l hB hS iH => cases hr with
+          | if_false B' S T s r hB hS' => apply iH hS'
+          | if_true => aesop
+        | while_false => cases hr with
+          | while_false => rfl
+          | while_true => aesop
+        | while_true B S s t l hCondS hStepS hRestS ihS iHRestS => cases hr with
+          | while_true _ _ _ t' _ hCondT hStepT hRestT => cases ihS hStepT with
+            | refl => cases iHRestS hRestT with
+              | refl => rfl
+          | while_false => aesop
 
 end LoVe
