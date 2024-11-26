@@ -9,10 +9,10 @@ namespace LoVe
 
 inductive Stmt : Type where
   | skip       : Stmt
-  | assign     : String → (State → ℕ) → Stmt
+  | assign     : String → (State → DataType) → Stmt
   | seq        : Stmt → Stmt → Stmt
-  | ifThenElse : (State → Prop) → Stmt → Stmt → Stmt
-  | whileDo    : (State → Prop) → Stmt → Stmt
+  | ifThenElse : (State → DataType) → Stmt → Stmt → Stmt
+  | whileDo    : (State → DataType) → Stmt → Stmt
 
 infixr:90 "; " => Stmt.seq
 

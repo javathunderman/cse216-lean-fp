@@ -319,29 +319,34 @@ def cases (id : FVarId) : TacticM Unit :=
 
 /- ## States -/
 
-def State : Type :=
-  String → ℕ
+inductive DataType : Type where
+  | Nat (n: ℕ)
+  | Bool (b: Bool)
+deriving Repr, DecidableEq
 
-def State.update (name : String) (val : ℕ) (s : State) : State :=
+def State : Type :=
+  String → DataType
+
+def State.update (name : String) (val : DataType) (s : State) : State :=
   fun name' ↦ if name' = name then val else s name'
 
 macro s:term "[" name:term "↦" val:term "]" : term =>
   `(State.update $name $val $s)
 
-@[simp] theorem update_apply (name : String) (val : ℕ) (s : State) :
+@[simp] theorem update_apply (name : String) (val : DataType) (s : State) :
   (s[name ↦ val]) name = val :=
   by
     apply if_pos
     rfl
 
-@[simp] theorem update_apply_neq (name name' : String) (val : ℕ) (s : State)
+@[simp] theorem update_apply_neq (name name' : String) (val : DataType) (s : State)
     (hneq : name' ≠ name) :
   (s[name ↦ val]) name' = s name' :=
   by
     apply if_neg
     assumption
 
-@[simp] theorem update_override (name : String) (val₁ val₂ : ℕ) (s : State) :
+@[simp] theorem update_override (name : String) (val₁ val₂ : DataType) (s : State) :
   s[name ↦ val₂][name ↦ val₁] = s[name ↦ val₁] :=
   by
     apply funext
@@ -350,7 +355,7 @@ macro s:term "[" name:term "↦" val:term "]" : term =>
     | inl h => simp [h]
     | inr h => simp [h]
 
-theorem update_swap (name₁ name₂ : String) (val₁ val₂ : ℕ) (s : State)
+theorem update_swap (name₁ name₂ : String) (val₁ val₂ : DataType) (s : State)
     (hneq : name₁ ≠ name₂) :
 -- `hneq` should have `by decide` as an auto param, but this confuses `simp`.
 -- See https://github.com/leanprover/lean4/issues/3257
@@ -374,7 +379,7 @@ theorem update_swap (name₁ name₂ : String) (val₁ val₂ : ℕ) (s : State)
     intro heq
     simp [*]
 
-@[simp] theorem update_same_const (name : String) (val : ℕ) :
+@[simp] theorem update_same_const (name : String) (val : DataType) :
   (fun _ ↦ val)[name ↦ val] = (fun _ ↦ val) :=
   by
     apply funext
@@ -437,23 +442,23 @@ simproc decideStrLitEq (@Eq String _ _) := λ prop => do
   return .continue
 
 example (s : State) :
-  s["a" ↦ 0]["a" ↦ 2] = s["a" ↦ 2] :=
+  s["a" ↦ DataType.Nat 0]["a" ↦ DataType.Nat 2] = s["a" ↦ DataType.Nat 2] :=
   by simp
 
 example (s : State) :
-  (s["a" ↦ 0]) "b" = s "b" :=
+  (s["a" ↦ DataType.Nat 0]) "b" = s "b" :=
   by simp
 
 example (s : State) :
-  s["a" ↦ 0]["b" ↦ 2] = s["b" ↦ 2]["a" ↦ 0] :=
+  s["a" ↦ DataType.Nat 0]["b" ↦ DataType.Nat 2] = s["b" ↦ DataType.Nat 2]["a" ↦ DataType.Nat 0] :=
   by simp [update_swap]
 
 example (s : State) :
-  s["a" ↦ s "a"]["b" ↦ 0] = s["b" ↦ 0] :=
+  s["a" ↦ s "a"]["b" ↦ DataType.Nat 0] = s["b" ↦ DataType.Nat 0] :=
   by simp
 
 example (s : State) :
-  (s["a" ↦ 0]["b" ↦ 0]) "c" = s "c" :=
+  (s["a" ↦ DataType.Nat 0]["b" ↦ DataType.Nat 0]) "c" = s "c" :=
   by simp (config := {decide := true})
 
 end LoVe
