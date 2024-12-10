@@ -95,4 +95,39 @@ theorem BigStep_deterministic {Ss l r} (hl: Ss ⟹ l)
               | refl => rfl
           | while_false => aesop
 
+def PartialHoare (P : State → Prop) (S : Stmt)
+  (Q : State → Prop) : Prop :=
+    ∀s t, P s → (S, s) ⇒ t → Q t
+-- Type issue with (S,s), may need 2 define as variable
+-- ask prof fremont?
+
+theorem skip_intro {P} :
+  {* P *}(Stmt.skip){* P *}
+-- Lean issue? may need to define/dig thru lovelib
+
+
+theorem assign_intro (P) {x a} :
+  {* P (s[x ↦ a s])*}(Stmt.assign x a){* P *}
+
+theorem seq_intro {P Q R S T}
+  (hS: {*P*}(S){*R*})
+  (hT: {*R*}(T){*Q*}) :
+  {* P *} (S; T) {* Q *}
+
+theorem if_intro {P B S Q T}
+  (h: {fun s ↦ P s ∧ B s} (S) {Q})
+  (hb:{fun s ↦ P s ∧ ¬B s} (S) {Q}) :
+  {* P *} (Stmt.ifThenElse B S T) {* Q *}
+
+theorem while_intro (P) {B S}
+  (hS: {* fun s ↦ P s ∧ B s *} (S) {* P *}) :
+    {* P *} (Stmt.whileDo B S) {* fun s ↦ P s ∧ ¬ B s *}
+
+theorem consequence {P P' Q Q' S}
+  (hP: P' s → P s)
+  (hQ: Q → Q')
+  (hS: {*P*} (S) {*Q*}) :
+  {* P' *} (S) {* Q' *}
+
+
 end LoVe
