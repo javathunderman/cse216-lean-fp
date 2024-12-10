@@ -129,5 +129,8 @@ theorem consequence {P P' Q Q' S}
   (hS: {*P*} (S) {*Q*}) :
   {* P' *} (S) {* Q' *}
 
+-- maybe try lovelib with deeper arithmetic embeddings?
+-- see if it helps
+
 
 end LoVe
