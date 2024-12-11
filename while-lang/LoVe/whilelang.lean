@@ -131,6 +131,6 @@ theorem consequence {P P' Q Q' S}
 
 -- maybe try lovelib with deeper arithmetic embeddings?
 -- see if it helps
-
+-- maybe ask on zulip or consult documentation
 
 end LoVe
