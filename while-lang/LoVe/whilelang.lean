@@ -9,7 +9,7 @@ namespace LoVe
 
 inductive Stmt : Type where
   | skip       : Stmt
-  | assign     : String → (State → ℕ) → Stmt
+  | assign     : String → (State → DataType) → Stmt
   | seq        : Stmt → Stmt → Stmt
   | ifThenElse : (State → Prop) → Stmt → Stmt → Stmt
   | whileDo    : (State → Prop) → Stmt → Stmt
@@ -28,7 +28,7 @@ is modeled as -/
 def sillyLoop : Stmt :=
   Stmt.whileDo (fun s ↦ s "x" > s "y")
     (Stmt.skip;
-     Stmt.assign "x" (fun s ↦ s "x" - 1))
+     Stmt.assign "x" (fun s ↦ s "x" - DataType.natural 1))
 
 inductive BigStep : Stmt × State → State → Prop where
   | skip (s) :
@@ -55,7 +55,7 @@ infix:110 " ⟹ " => BigStep
 
 /- What does this theorem actually say? -/
 theorem silly_from_1_BigStep :
-  (sillyLoop, (fun _ ↦ 0)["x" ↦ 1]) ⟹ (fun _ ↦ 0) :=
+  (sillyLoop, (fun _ ↦ DataType.natural 0)["x" ↦ DataType.natural 1]) ⟹ (fun _ ↦ DataType.natural 0) :=
     by
       rw [sillyLoop] /- what does the rw tactic do? rewrite -/
       apply BigStep.while_true
