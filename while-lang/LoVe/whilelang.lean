@@ -51,7 +51,7 @@ inductive BigStep : Stmt × State → State → Prop where
 
 infix:110 " ⟹ " => BigStep
 
-theorem zero_eq (n: Nat) :
+theorem zero_eq :
   DataType.natural 1 - DataType.natural 1 = DataType.natural 0 :=
     by
       simp_arith
