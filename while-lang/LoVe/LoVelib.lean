@@ -331,14 +331,14 @@ instance : HSub DataType DataType DataType where
   hSub x y := match x with
     | DataType.natural n => match y with
       | DataType.natural n' => DataType.natural (n - n')
-      | DataType.boolean _ => DataType.boolean false
-    | DataType.boolean _ => DataType.boolean false
+      | DataType.boolean _ => DataType.natural 0
+    | DataType.boolean _ => DataType.natural 0
 instance : HAdd DataType DataType DataType where
   hAdd x y := match x with
     | DataType.natural n => match y with
       | DataType.natural n' => DataType.natural (n + n')
-      | DataType.boolean _ => DataType.boolean false
-    | _ => DataType.boolean false
+      | DataType.boolean _ => DataType.natural 0
+    | _ => DataType.natural 0
 
 instance : LE DataType where
   le x y := match x with

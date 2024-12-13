@@ -56,6 +56,10 @@ theorem zero_eq :
     by
       simp_arith
 
+theorem sub_zero : ∀ n : Nat, DataType.natural n - DataType.natural n = DataType.natural 0 := by
+  simp only [HSub.hSub, Sub.sub]
+  simp_arith
+
 theorem silly_from_1_BigStep :
   (sillyLoop, (fun _ ↦ DataType.natural 0)["x" ↦ DataType.natural 1]) ⟹ (fun _ ↦ DataType.natural 0) :=
     by
@@ -66,7 +70,7 @@ theorem silly_from_1_BigStep :
       apply BigStep.skip
       apply BigStep.assign
       simp
-      rw [zero_eq]
+      rw [sub_zero]
       simp
       apply BigStep.while_false
       simp_arith
@@ -74,7 +78,7 @@ theorem silly_from_1_BigStep :
 theorem BigStep_deterministic {Ss l r} (hl: Ss ⟹ l)
   (hr: Ss ⟹ r):
     l = r := by
-      induction hl with
+      induction hl generalizing r with
         | skip => cases hr with
           | skip => rfl
         | assign =>
