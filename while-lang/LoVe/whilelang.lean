@@ -1,8 +1,6 @@
 import LoVe.LoVelib
-
 set_option autoImplicit false
 set_option tactic.hygienic false
-
 namespace LoVe
 
 #print State
@@ -11,8 +9,8 @@ inductive Stmt : Type where
   | skip       : Stmt
   | assign     : String → (State → DataType) → Stmt
   | seq        : Stmt → Stmt → Stmt
-  | ifThenElse : (State → DataType) → Stmt → Stmt → Stmt
-  | whileDo    : (State → DataType) → Stmt → Stmt
+  | ifThenElse : (State → Prop) → Stmt → Stmt → Stmt
+  | whileDo    : (State → Prop) → Stmt → Stmt
 
 infixr:90 "; " => Stmt.seq
 
@@ -28,7 +26,7 @@ is modeled as -/
 def sillyLoop : Stmt :=
   Stmt.whileDo (fun s ↦ s "x" > s "y")
     (Stmt.skip;
-     Stmt.assign "x" (fun s ↦ s "x" - 1))
+     Stmt.assign "x" (fun s ↦ s "x" - DataType.natural 1))
 
 inductive BigStep : Stmt × State → State → Prop where
   | skip (s) :
@@ -53,24 +51,34 @@ inductive BigStep : Stmt × State → State → Prop where
 
 infix:110 " ⟹ " => BigStep
 
-/- What does this theorem actually say? -/
-theorem silly_from_1_BigStep :
-  (sillyLoop, (fun _ ↦ 0)["x" ↦ 1]) ⟹ (fun _ ↦ 0) :=
+theorem zero_eq :
+  DataType.natural 1 - DataType.natural 1 = DataType.natural 0 :=
     by
-      rw [sillyLoop] /- what does the rw tactic do? rewrite -/
+      simp_arith
+
+theorem sub_zero : ∀ n : Nat, DataType.natural n - DataType.natural n = DataType.natural 0 := by
+  simp only [HSub.hSub, Sub.sub]
+  simp_arith
+
+theorem silly_from_1_BigStep :
+  (sillyLoop, (fun _ ↦ DataType.natural 0)["x" ↦ DataType.natural 1]) ⟹ (fun _ ↦ DataType.natural 0) :=
+    by
+      rw [sillyLoop]
       apply BigStep.while_true
-      { simp }
-      { apply BigStep.seq
-        { apply BigStep.skip }
-        { apply BigStep.assign } }
+      simp_arith
+      apply BigStep.seq
+      apply BigStep.skip
+      apply BigStep.assign
+      simp
+      rw [sub_zero]
       simp
       apply BigStep.while_false
-      simp
+      simp_arith
 
 theorem BigStep_deterministic {Ss l r} (hl: Ss ⟹ l)
   (hr: Ss ⟹ r):
     l = r := by
-      induction hl with
+      induction hl generalizing r with
         | skip => cases hr with
           | skip => rfl
         | assign =>

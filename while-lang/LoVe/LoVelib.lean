@@ -320,12 +320,54 @@ def cases (id : FVarId) : TacticM Unit :=
 /- ## States -/
 
 inductive DataType : Type where
-  | Nat (n: ℕ)
-  | Bool (b: Bool)
+  | natural (n: ℕ)
+  | boolean (b: Bool)
 deriving Repr, DecidableEq
 
 def State : Type :=
   String → DataType
+
+instance : HSub DataType DataType DataType where
+  hSub x y := match x with
+    | DataType.natural n => match y with
+      | DataType.natural n' => DataType.natural (n - n')
+      | DataType.boolean _ => DataType.natural 0
+    | DataType.boolean _ => DataType.natural 0
+instance : HAdd DataType DataType DataType where
+  hAdd x y := match x with
+    | DataType.natural n => match y with
+      | DataType.natural n' => DataType.natural (n + n')
+      | DataType.boolean _ => DataType.natural 0
+    | _ => DataType.natural 0
+
+instance : LE DataType where
+  le x y := match x with
+    | DataType.natural n => match y with
+      | DataType.natural n' => n <= n'
+      | DataType.boolean _ => False
+    | DataType.boolean _ => False
+
+instance : LT DataType where
+  lt x y := match x with
+    | DataType.natural n => match y with
+      | DataType.natural n' => n < n'
+      | DataType.boolean _ => False
+    | DataType.boolean _ => False
+
+instance : Neg DataType where
+  neg x := match x with
+    | DataType.boolean b => DataType.boolean ¬ b
+    | DataType.natural _ => DataType.boolean false
+
+instance : BEq DataType where
+  beq x y := match x with
+    | DataType.natural n => match y with
+      | DataType.natural n' => n = n'
+      | DataType.boolean _ => false
+    | DataType.boolean b => match y with
+      | DataType.natural _ => false
+      | DataType.boolean b' => b = b'
+
 
 def State.update (name : String) (val : DataType) (s : State) : State :=
   fun name' ↦ if name' = name then val else s name'
@@ -442,23 +484,23 @@ simproc decideStrLitEq (@Eq String _ _) := λ prop => do
   return .continue
 
 example (s : State) :
-  s["a" ↦ DataType.Nat 0]["a" ↦ DataType.Nat 2] = s["a" ↦ DataType.Nat 2] :=
+  s["a" ↦ DataType.natural 0]["a" ↦ DataType.natural 2] = s["a" ↦ DataType.natural 2] :=
   by simp
 
 example (s : State) :
-  (s["a" ↦ DataType.Nat 0]) "b" = s "b" :=
+  (s["a" ↦ DataType.natural 0]) "b" = s "b" :=
   by simp
 
 example (s : State) :
-  s["a" ↦ DataType.Nat 0]["b" ↦ DataType.Nat 2] = s["b" ↦ DataType.Nat 2]["a" ↦ DataType.Nat 0] :=
+  s["a" ↦ DataType.natural 0]["b" ↦ DataType.natural 2] = s["b" ↦ DataType.natural 2]["a" ↦ DataType.natural 0] :=
   by simp [update_swap]
 
 example (s : State) :
-  s["a" ↦ s "a"]["b" ↦ DataType.Nat 0] = s["b" ↦ DataType.Nat 0] :=
+  s["a" ↦ s "a"]["b" ↦ DataType.natural 0] = s["b" ↦ DataType.natural 0] :=
   by simp
 
 example (s : State) :
-  (s["a" ↦ DataType.Nat 0]["b" ↦ DataType.Nat 0]) "c" = s "c" :=
+  (s["a" ↦ DataType.natural 0]["b" ↦ DataType.natural 0]) "c" = s "c" :=
   by simp (config := {decide := true})
 
 end LoVe
