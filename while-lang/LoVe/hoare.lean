@@ -10,24 +10,9 @@ open Lean.Elab.Tactic
 
 namespace LoVe
 
-
--- inductive Stmt : Type where
---   | skip       : Stmt
---   | assign     : String → (State → ℕ) → Stmt
---   | seq        : Stmt → Stmt → Stmt
---   | ifThenElse : (State → Prop) → Stmt → Stmt → Stmt
---   | whileDo    : (State → Prop) → Stmt → Stmt
--- infixr:90 "; " => Stmt.seq
-
-
-
-
 def PartialHoare (P : State → Prop) (S : Stmt)
   (Q : State → Prop) : Prop :=
     ∀s t, P s → (S, s) ⟹ t → Q t
--- Type issue with (S,s), may need 2 define as variable
--- ask prof fremont?
--- for some reason importing the demo file fixes this
 
 macro "{*" P:term " *} " "(" S:term ")" " {* " Q:term " *}" : term =>
   `(PartialHoare $P $S $Q)
