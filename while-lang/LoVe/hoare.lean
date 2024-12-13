@@ -1,5 +1,5 @@
 import LoVe.LoVelib
-import LoVe.Demo9
+import LoVe.whilelang
 
 set_option autoImplicit false
 set_option tactic.hygienic false
@@ -41,14 +41,14 @@ theorem skip_intro {P} :
     cases hst
     assumption
 
-
-
-theorem assign_intro (P) {x a} :
-  {*fun s ↦ P (s[x ↦ a s])*}(Stmt.assign x a){* P *} :=
+theorem assign_intro (P) {x} :
+  {*fun s ↦ P (s[x ↦ (fun _ ↦ DataType.natural 0) s])*}(Stmt.assign x (fun _ ↦ DataType.natural 0)){* P *} :=
   by
     intro s t P' hst
     cases hst with
     | assign => assumption
+
+-- TODO: Show a case where this clearly does not follow
 
 theorem seq_intro {P Q R S T}
   (hS: {*P*}(S){*R*})
@@ -64,9 +64,9 @@ theorem seq_intro {P Q R S T}
         { assumption } }
       { assumption }
 
-theorem if_intro {P B S Q T}
-  (h: {* fun s ↦ P s ∧ B s *} (S) {* Q*})
-  (hb:{* fun s ↦ P s ∧ ¬B s *} (S) {* Q *}) :
+theorem if_intro {B P Q S T}
+  (hS: {* fun s ↦ P s ∧ B s *} (S) {* Q*})
+  (hT:{* fun s ↦ P s ∧ ¬B s *} (T) {* Q *}) :
   {* P *} (Stmt.ifThenElse B S T) {* Q *} :=
   by
     intro s t hs hst
@@ -79,42 +79,6 @@ theorem if_intro {P B S Q T}
       apply hT
       exact And.intro hs hB
       assumption
-
-theorem while_intro (P) {B S}
-    (h : {* fun s ↦ P s ∧ B s *} (S) {* P *}) :
-  {* P *} (Stmt.whileDo B S) {* fun s ↦ P s ∧ ¬ B s *} :=
-  by
-    intro s t hs hst
-    generalize ws_eq : (Stmt.whileDo B S, s) = Ss
-    rw [ws_eq] at hst
-    induction hst generalizing s with
-    | skip s'                       => cases ws_eq
-    | assign x a s'                 => cases ws_eq
-    | seq S T s' t' u hS hT ih      => cases ws_eq
-    | if_true B S T s' t' hB hS ih  => cases ws_eq
-    | if_false B S T s' t' hB hT ih => cases ws_eq
-    | while_true B' S' s' t' u hB' hS hw ih_hS ih_hw =>
-      cases ws_eq
-      apply ih_hw
-      { apply h
-        { apply And.intro <;>
-            assumption }
-        { exact hS } }
-      { rfl }
-    | while_false B' S' s' hB'      =>
-      cases ws_eq
-      aesop
-
-theorem consequence {P P' Q Q' S}
-    (h : {* P *} (S) {* Q *}) (hp : ∀s, P' s → P s)
-    (hq : ∀s, Q s → Q' s) :
-  {* P' *} (S) {* Q' *} :=
-  fix s t : State
-  assume hs : P' s
-  assume hst : (S, s) ⟹ t
-  show Q' t from
-    hq _ (h s t (hp s hs) hst)
-
 
 end PartialHoare
 end LoVe
