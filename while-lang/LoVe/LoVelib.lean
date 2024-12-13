@@ -343,16 +343,21 @@ instance : HAdd DataType DataType DataType where
 instance : LE DataType where
   le x y := match x with
     | DataType.natural n => match y with
-      | DataType.natural n' => n < n'
-      | DataType.boolean _ => false
-    | DataType.boolean _ => false
+      | DataType.natural n' => n <= n'
+      | DataType.boolean _ => False
+    | DataType.boolean _ => False
 
 instance : LT DataType where
   lt x y := match x with
     | DataType.natural n => match y with
-      | DataType.natural n' => n > n'
-      | DataType.boolean _ => false
-    | DataType.boolean _ => false
+      | DataType.natural n' => n < n'
+      | DataType.boolean _ => False
+    | DataType.boolean _ => False
+
+instance : Neg DataType where
+  neg x := match x with
+    | DataType.boolean b => DataType.boolean ¬ b
+    | DataType.natural _ => DataType.boolean false
 
 instance : BEq DataType where
   beq x y := match x with

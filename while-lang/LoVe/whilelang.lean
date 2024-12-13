@@ -1,8 +1,6 @@
 import LoVe.LoVelib
-
 set_option autoImplicit false
 set_option tactic.hygienic false
-
 namespace LoVe
 
 #print State
@@ -53,19 +51,25 @@ inductive BigStep : Stmt × State → State → Prop where
 
 infix:110 " ⟹ " => BigStep
 
-/- What does this theorem actually say? -/
+theorem zero_eq (n: Nat) :
+  DataType.natural 1 - DataType.natural 1 = DataType.natural 0 :=
+    by
+      simp_arith
+
 theorem silly_from_1_BigStep :
   (sillyLoop, (fun _ ↦ DataType.natural 0)["x" ↦ DataType.natural 1]) ⟹ (fun _ ↦ DataType.natural 0) :=
     by
-      rw [sillyLoop] /- what does the rw tactic do? rewrite -/
+      rw [sillyLoop]
       apply BigStep.while_true
-      { simp }
-      { apply BigStep.seq
-        { apply BigStep.skip }
-        { apply BigStep.assign } }
+      simp_arith
+      apply BigStep.seq
+      apply BigStep.skip
+      apply BigStep.assign
+      simp
+      rw [zero_eq]
       simp
       apply BigStep.while_false
-      simp
+      simp_arith
 
 theorem BigStep_deterministic {Ss l r} (hl: Ss ⟹ l)
   (hr: Ss ⟹ r):
